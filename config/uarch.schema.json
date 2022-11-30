@@ -1,0 +1,266 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id" : "uarch.schema.json",
+
+  "title": "Microarchitecture Configuration",
+  "description": "TBM configuration for a microarchitecture",
+
+  "$ref" : "#/$defs/object",
+  "properties" : {
+    "config" : {
+      "$ref" : "#/$defs/object",
+      "properties" : {
+        "branch_prediction" : { "enum" : ["none", "perfect"] },
+        "fetch_rate" : { "$ref" : "#/$defs/positive_integer" },
+        "fetch_queue_size" : {
+          "description" : "Infinite queue if omitted",
+          "$ref" : "#/$defs/positive_integer"
+        },
+        "decode_rate" : {
+          "description" : "Unrestricted if omitted",
+          "$ref" : "#/$defs/positive_integer"
+        },
+        "vector_slices" : {
+          "description" : "The number of slices each vector register is composed of",
+          "$ref" : "#/$defs/positive_integer"
+        }
+      },
+      "unevaluatedProperties" : false,
+      "required" : ["branch_prediction", "fetch_rate", "vector_slices"]
+    },
+
+    "register_files" : {
+      "$ref" : "#/$defs/object",
+      "unevaluatedProperties" : {
+        "$ref" : "#/$defs/object",
+        "properties" : {
+          "type" : { "$ref" : "#/$defs/data_type" },
+          "regs" : {
+            "$comment" : "TODO(sflur): TBM currently ignores `regs`",
+            "type" : "array",
+            "items" : { "type": "string" },
+            "minItems" : 1,
+            "uniqueItems" : true
+          },
+          "read_ports" : { "$ref" : "#/$defs/positive_integer" },
+          "write_ports" : { "$ref" : "#/$defs/positive_integer" }
+        },
+        "if" : {
+          "properties" : { "type" : { "const" : "vector" } }
+        }, "then" : {
+          "properties" : {
+            "dedicated_read_ports" : {
+              "description" : "Reading from the listed registers doesn't use a read port.",
+              "type" : "array",
+              "items" : {
+                "type" : "string",
+                "$comment" : "items should be from `regs`"
+              },
+              "minItems" : 1,
+              "uniqueItems" : true
+            },
+            "dedicated_write_ports" : {
+              "description" : "Writing to the listed registers doesn't use a write port.",
+              "type" : "array",
+              "items" : {
+                "type" : "string",
+                "$comment" : "items should be from `regs`"
+              },
+              "minItems" : 1,
+              "uniqueItems" : true
+            }
+          }
+        },
+        "unevaluatedProperties" : false,
+        "required" : ["type"]
+      }
+    },
+
+    "issue_queues" : {
+      "$ref" : "#/$defs/object",
+      "unevaluatedProperties" : {
+        "$ref" : "#/$defs/object",
+        "properties" : {
+          "size" : { "$ref" : "#/$defs/positive_integer" }
+        },
+        "unevaluatedProperties" : false
+      },
+      "minProperties": 1
+    },
+
+    "functional_units" : {
+      "$ref" : "#/$defs/object",
+      "unevaluatedProperties" : {
+        "$ref" : "#/$defs/object",
+        "properties" : {
+          "count" : { "$ref" : "#/$defs/positive_integer" },
+          "type" : { "$ref" : "#/$defs/data_type" },
+          "issue_queue" : {
+            "type" : "string",
+            "$comment" : "should be one of the `issue_queues`"
+          },
+          "eiq_size" : {
+            "description" : "Unrestricted if omitted",
+            "$ref" : "#/$defs/positive_integer"
+          },
+          "can_skip_eiq" : { "type" : "boolean" },
+          "depth" : { "$ref" : "#/$defs/positive_integer" },
+          "pipelined": { "type" : "boolean" },
+          "load_stage": { "$ref" : "#/$defs/non_negative_integer" },
+          "store_stage": { "$ref" : "#/$defs/non_negative_integer" },
+          "writeback_buff_size": {
+            "description" : "Unrestricted if omitted",
+            "$ref" : "#/$defs/positive_integer"
+          }
+        },
+        "dependentSchemas" : {
+          "load_stage": {
+            "properties" : {
+              "fixed_load_latency": { "$ref" : "#/$defs/non_negative_integer" },
+              "memory_interface" : {
+                "type" : "string",
+                "$comment" : "should be one of the cache levels, or `'main'`"
+              }
+            },
+            "required" : ["fixed_load_latency", "memory_interface"]
+          },
+          "store_stage": {
+            "properties" : {
+              "fixed_store_latency": { "$ref" : "#/$defs/non_negative_integer" },
+              "memory_interface" : {
+                "type" : "string",
+                "$comment" : "should be one of the cache levels, or `'main'`"
+              }
+            },
+            "required" : ["fixed_store_latency", "memory_interface"]
+          }
+        },
+        "unevaluatedProperties" : false,
+        "required" : ["type", "issue_queue", "can_skip_eiq", "depth",
+                      "pipelined"]
+      }
+    },
+
+    "pipe_maps" : {
+      "type" : "array",
+      "items" : {
+        "description" : "File (.json) path, that maps instructions to functional units",
+        "type": "string"
+      },
+      "minItems" : 1,
+      "uniqueItems" : true
+    },
+
+    "memory_system" : {
+      "$ref" : "#/$defs/object",
+      "properties" : {
+        "latencies" : { "$ref" : "#/$defs/mem_latencies" },
+        "levels" : { "$ref" : "#/$defs/cache_levels" }
+      },
+      "unevaluatedProperties" : false,
+      "required" : ["latencies"]
+    }
+  },
+  "unevaluatedProperties" : false,
+  "required" : ["config", "register_files", "issue_queues", "functional_units",
+                "pipe_maps", "memory_system"],
+
+  "$defs" : {
+    "object" : {
+      "description" : "an object type that allows string `description` and `__comment__` prefix",
+      "type" : "object",
+      "properties" : {
+        "description" : { "type" : "string" }
+      },
+      "patternProperties" : { "^__comment__" : true },
+      "$comment" : "TBM also accepts the boolean 'replace' property in files passed with the '--extend' argument, but those are not validated separately, only the merged result is validated."
+    },
+
+    "positive_integer" : {
+      "type" : "integer",
+      "minimum" : 1
+    },
+
+    "non_negative_integer" : {
+      "type" : "integer",
+      "minimum" : 0
+    },
+
+    "data_type" : { "enum" : ["scalar", "vector"] },
+
+    "bits" : {
+      "type" : "integer"
+    },
+
+    "bytes" : {
+      "type" : ["string", "integer"],
+      "pattern" : "^\\d+(b|B|kb|KB|mb|MB|gb|GB|tb|TB)?$"
+    },
+
+    "mem_latencies" : {
+      "$ref" : "#/$defs/object",
+      "properties" : {
+        "fetch_read" : { "$ref" : "#/$defs/positive_integer" },
+        "fetch_write" : { "$ref" : "#/$defs/positive_integer" },
+        "read" : { "$ref" : "#/$defs/positive_integer" },
+        "write" : { "$ref" : "#/$defs/positive_integer" }
+      },
+      "unevaluatedProperties" : false
+    },
+
+    "cache_levels" : {
+      "$ref" : "#/$defs/object",
+      "unevaluatedProperties" : {
+        "$ref" : "#/$defs/object",
+        "properties" : {
+          "type" : { "enum" : ["unified", "dcache", "icache"] },
+          "placement" : {
+            "$ref" : "#/$defs/object",
+            "properties" : {
+              "type" : { "enum" : ["direct_map", "set_assoc"] }
+            },
+            "if" : {
+              "properties" : { "type" : { "constant" : "set_assoc" } }
+            }, "then" : {
+              "properties" : {
+                "set_size" : {
+                  "description" : "the number of lines in the set; must be a power of 2",
+                  "$ref" : "#/$defs/positive_integer"
+                },
+                "replacement" : { "enum" : ["LRU"] }
+              },
+              "required" : ["set_size", "replacement"]
+            },
+            "unevaluatedProperties" : false,
+            "required" : ["type"]
+          },
+          "write_policy" : { "enum" : ["write_back", "write_through"] },
+          "line_size" : {
+            "description" : "the number of bits in a cache line; must be equal to `2^(3*n)`, for some `n`",
+            "$ref" : "#/$defs/bits",
+            "$ref" : "#/$defs/positive_integer"
+          },
+          "size" : {
+            "description" : "the total capacity of the cache in bytes; must be a power of 2",
+            "$ref" : "#/$defs/bytes",
+            "minimum" : 1,
+            "pattern" : "^[1-9]"
+          },
+          "latencies" : { "$ref" : "#/$defs/mem_latencies" },
+          "levels" : { "$ref" : "#/$defs/cache_levels" }
+        },
+        "dependentSchemas" : {
+          "levels" : {
+            "properties" : {
+              "inclusion" : { "enum" : ["exclusive", "inclusive"] }
+            },
+            "required" : ["inclusion"]
+          }
+        },
+        "unevaluatedProperties" : false,
+        "required" : ["type", "placement", "write_policy", "line_size", "size",
+                      "latencies"]
+      }
+    }
+  }
+}

@@ -1,0 +1,491 @@
+{
+  "description": "TBM configuration for Springbok",
+
+  # This file is also used as an example of a TBM configuration, hence all the
+  # comments.
+
+  # To experiment with different configurations based on this one, create a new
+  # configuration file with only the properties you want to change, and pass
+  # the new file to TBM with the '--extend' argument (this file should still be
+  # passed to TBM with the '--uarch' argument). You can use the '--extend'
+  # argument multiple times to pass multiple files. Normally, properties in
+  # 'extend' files overwrite (or add) properties. If you want to replace an
+  # entire object (i.e. not just overwrite the mentioned properties, also
+  # remove all the other properties), include the property 'replace : true' in
+  # the object.
+
+  # config: object, required. General parameters of the microarchitecture.
+  "config" : {
+    # branch_prediction: enum, required. Possible values:
+    #   'none' - no branch prediction, fetch is stalled until the target is
+    #            computed.
+    #   'perfect' - branching doesn't cause fetch stalls (the branch target is
+    #               taken from the input trace).
+    "branch_prediction" : "perfect",
+
+    # fetch_rate: positive integer, required. The number of instructions that
+    # are fetched in a cycle. If the fetch queue doesn't have enough space for
+    # all the instructions, none are fetched.
+    "fetch_rate" : 4,
+
+    # fetch_queue_size: positive integer. The size of the fetch queue. If
+    # omitted, the queue is unrestricted (infinite).
+    "fetch_queue_size" : 4,
+
+    # decode_rate: positive integer. The number of instructions that can be
+    # decoded and moved from the fetch queue to the dispatch queues in a cycle.
+    # If omitted, as many instructions as possible are decoded and moved.
+    "decode_rate" : 4,
+
+    # vector_slices: positive integer, required. The number of slices each
+    # vector register is composed of.
+    "vector_slices" : 2
+  },
+
+  # register_files: map, required. Currently the register file names X, F, V,
+  # and MISC are hard-coded in TBM. In the future, the 'regs' property will be
+  # used to determine which register file a register belongs to. All registers
+  # that are not X, F, or V, are MISC.
+  "register_files" : {
+    "X" : {
+      # type: enum, required. Possible values:
+      #   'scalar' - scalar registers.
+      #   'vector' - vector registers.
+      "type" : "scalar",
+
+      # regs: array, currently ignored.
+      "regs" : [
+               "x1",  "x2",  "x3",  "x4",  "x5",  "x6",  "x7",
+        "x8",  "x9",  "x10", "x11", "x12", "x13", "x14", "x15",
+        "x16", "x17", "x18", "x19", "x20", "x21", "x22", "x23",
+        "x24", "x25", "x26", "x27", "x28", "x29", "x30", "x31"
+      ],
+
+      # read_ports: positive integer. The number of register reads that can be
+      # done in a cycle, excluding registers listed in the
+      # 'dedicated_read_ports' property. If omitted, any number of registers
+      # can be read in a cycle.
+      "read_ports" : 2,
+
+      # write_ports: positive integer. Similar to 'read_ports'.
+      "write_ports" : 1
+    },
+
+    "F" : {
+      "type" : "scalar",
+      "regs" : [
+        "f0",  "f1",  "f2",  "f3",  "f4",  "f5",  "f6",  "f7",
+        "f8",  "f9",  "f10", "f11", "f12", "f13", "f14", "f15",
+        "f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23",
+        "f24", "f25", "f26", "f27", "f28", "f29", "f30", "f31"
+      ],
+      "read_ports" : 2,
+      "write_ports" : 1
+    },
+
+    "V" : {
+      "type" : "vector",
+      "regs" : [
+        "v0",  "v1",  "v2",  "v3",  "v4",  "v5",  "v6",  "v7",
+        "v8",  "v9",  "v10", "v11", "v12", "v13", "v14", "v15",
+        "v16", "v17", "v18", "v19", "v20", "v21", "v22", "v23",
+        "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31"
+      ],
+      "read_ports" : 2,
+      "write_ports" : 1,
+
+      # dedicated_read_ports: array. This property is only valid when the
+      # register file 'type' is 'vector'. See 'read_ports' for more
+      # information.
+      "dedicated_read_ports" : [ "v0" ]
+
+      # dedicated_write_ports, array. Similar to 'dedicated_read_ports'.
+    },
+
+    "MISC" : {
+      "type" : "scalar"
+    }
+  },
+
+  # issue_queues: map, required. Currently the names S and V are hard-coded in
+  # TBM.
+  "issue_queues": {
+    "S" : {
+      # size: positive integer. The number of instructions the issue/dispatch
+      # queue can hold. If omitted, the queue is unrestricted (infinite).
+      "size" : 4
+    },
+
+    "V" : {
+      "size" : 4
+    }
+  },
+
+  # functional_units: map, required.
+  "functional_units" : {
+    "lsu" : {
+      # count: positive integer. The number of copies of this unit avilable. If
+      # omitted, one copy will be avilable.
+      "count" : 1,
+
+      # type: enum, required. Possible values:
+      #   'scalar' - scalar datapath.
+      #   'vector' - vector datapath (see slices).
+      "type" : "scalar",
+
+      # issue_queue: string, required. The issue queue that feeds this unit.
+      "issue_queue" : "S",
+
+      # eiq_size: positive integer. If omitted, the queue is unrestricted
+      # (infinite).
+      "eiq_size" : 4,
+
+      # can_skip_eiq: boolean, required. When true, instructions can move from
+      # the issue queue directly to the first pipeline stage. Otherwise,
+      # instructions must spend at list one cycle in the EIQ before they move
+      # to the first pipeline stage.
+      "can_skip_eiq" : true,
+
+      # depth: positive integer, required. The number of stages in the
+      # pipeline.
+      "depth" : 3,
+
+      # pipelined: boolean, required. When true, each pipeline stage can be
+      # populated with a different instruction. Otherwise, only one instruction
+      # can be in any stage of the pipeline.
+      "pipelined": true,
+
+      # load_stage: non-negative integer. For units that read from memory, this
+      # is the pipeline stage (zero based) in which the memory accesses is
+      # initiated.
+      "load_stage": 1,
+
+      # fixed_load_latency: non-negative integer, required when 'load_stage' is
+      # specified. A load instruction will stall the pipeline only if it
+      # reaches the pipeline stage 'load_stage + fixed_load_latency', and the
+      # memory value is not available yet.
+      "fixed_load_latency": 1,
+
+      # store_stage: non-negative integer. Similar to 'load_stage'.
+      "store_stage": 1,
+
+      # fixed_store_latency: non-negative integer, required when 'store_stage'
+      # is specified. Similar to 'fixed_load_latency'.
+      "fixed_store_latency": 1,
+
+      # memory_interface: string, required when 'load_stage' or 'store_stage'
+      # are specified. This should be one of the cache levels (see
+      # 'memory_system'), or 'main'. For units that accesses memory, this is
+      # the memory module the unit interacts with.
+      "memory_interface" : "L1D",
+
+      # writeback_buff_size: positive integer. The size of the register
+      # writeback buffer. If omitted, the buffer is unrestricted (infinite).
+      "writeback_buff_size": 2
+    },
+
+    "alu" : {
+      "type" : "scalar",
+      "issue_queue" : "S",
+      "eiq_size" : 4, "can_skip_eiq" : true,
+      "depth" : 1, "pipelined": true,
+      "writeback_buff_size": 2
+    },
+
+    "div" : {
+      "type" : "scalar",
+      "issue_queue" : "S",
+      "eiq_size" : 4, "can_skip_eiq" : true,
+      "depth" : 4, "pipelined": true,
+      "writeback_buff_size": 2
+    },
+
+    "mul" : {
+      "type" : "scalar",
+      "issue_queue" : "S",
+      "eiq_size" : 4, "can_skip_eiq" : true,
+      "depth" : 1, "pipelined": true,
+      "writeback_buff_size": 2
+    },
+
+    "fpu" : {
+      "type" : "scalar",
+      "issue_queue" : "S",
+      "eiq_size" : 4, "can_skip_eiq" : true,
+      "depth" : 1, "pipelined": true,
+      "writeback_buff_size": 2
+    },
+
+    "branch" : {
+      "description" : "TODO(sflur): not sure how to handle these instruction, so added this unit for now.",
+      "type" : "scalar",
+      "issue_queue" : "S",
+      "eiq_size" : 1, "can_skip_eiq" : true,
+      "depth" : 1, "pipelined": false,
+      "writeback_buff_size": 1
+    },
+
+    "csr" : {
+      "description" : "TODO(sflur): not sure how to handle these instructions, so added this unit for now.",
+      "type" : "scalar",
+      "issue_queue" : "S",
+      "eiq_size" : 1, "can_skip_eiq" : true,
+      "depth" : 1, "pipelined": false,
+      "writeback_buff_size": 2
+    },
+
+    "vctrl" : {
+      "description" : "TODO(sflur): not sure how to handle these instructions, so added this unit for now.",
+      "type" : "scalar",
+      "issue_queue" : "S",
+      "eiq_size" : 1, "can_skip_eiq" : true,
+      "depth" : 1, "pipelined": false,
+      "writeback_buff_size": 1
+    },
+
+    "vlsu" : {
+      "type" : "vector",
+      "issue_queue" : "V",
+      "eiq_size" : 4, "can_skip_eiq" : true,
+      "depth" : 3, "pipelined": true,
+      "load_stage": 1, "fixed_load_latency": 1,
+      "store_stage": 1, "fixed_store_latency": 1,
+      "memory_interface" : "L1D",
+      "writeback_buff_size": 2
+    },
+
+    "valu" : {
+      "type" : "vector",
+      "issue_queue" : "V",
+      "eiq_size" : 4, "can_skip_eiq" : true,
+      "depth" : 2, "pipelined": true,
+      "writeback_buff_size": 2
+    },
+
+    "vmac" : {
+      "type" : "vector",
+      "issue_queue" : "V",
+      "eiq_size" : 4, "can_skip_eiq" : true,
+      "depth" : 3, "pipelined": true,
+      "writeback_buff_size": 2
+    },
+
+    "vdiv" : {
+      "type" : "vector",
+      "issue_queue" : "V",
+      "eiq_size" : 4, "can_skip_eiq" : true,
+      "depth" : 3, "pipelined": true,
+      "writeback_buff_size": 2
+    },
+
+    "vperm" : {
+      "type" : "vector",
+      "issue_queue" : "V",
+      "eiq_size" : 4, "can_skip_eiq" : true,
+      "depth" : 3, "pipelined": true,
+      "writeback_buff_size": 2
+    },
+
+    "vred" : {
+      "type" : "vector",
+      "issue_queue" : "V",
+      "eiq_size" : 4, "can_skip_eiq" : true,
+      "depth" : 2, "pipelined": true,
+      "writeback_buff_size": 2
+    },
+
+    "vmsk" : {
+      "description" : "From the spec doc, this look more special, it is used in conjunction with other units.",
+      "type" : "vector",
+      "issue_queue" : "V",
+      "eiq_size" : 4, "can_skip_eiq" : true,
+      "depth" : 2, "pipelined": true,
+      "writeback_buff_size": 2
+    },
+
+    "vmv" : {
+      "description" : "This unit is not in the spec doc, but I suspect it might be added later.",
+      "type" : "vector",
+      "issue_queue" : "V",
+      "eiq_size" : 4, "can_skip_eiq" : true,
+      "depth" : 1, "pipelined": true,
+      "writeback_buff_size": 2
+    },
+
+    "vfspecial" : {
+      "description" : "Not in the spec doc! copied from old config",
+      "type" : "vector",
+      "issue_queue" : "V",
+      "eiq_size" : 4, "can_skip_eiq" : true,
+      "depth" : 2, "pipelined": true,
+      "writeback_buff_size": 2
+    },
+
+    "vnimp" : {
+      "description" : "For instructions we don't care to implement",
+      "type" : "vector",
+      "issue_queue" : "V",
+      "eiq_size" : 4, "can_skip_eiq" : true,
+      "depth" : 1, "pipelined": false,
+      "writeback_buff_size": 2
+    }
+  },
+
+  # pipe_maps: array, required. A list of files specifying the mapping from
+  # instructions to functional units.
+  "pipe_maps" : [
+    "pipe_maps/riscv/missing.json",
+    "pipe_maps/riscv/custom.json",
+    "pipe_maps/riscv/rv32a.json",
+    "pipe_maps/riscv/rv32b.json",
+    "pipe_maps/riscv/rv32d.json",
+    "pipe_maps/riscv/rv32f.json",
+    "pipe_maps/riscv/rv32h.json",
+    "pipe_maps/riscv/rv32i.json",
+    "pipe_maps/riscv/rv32m.json",
+    "pipe_maps/riscv/rv32q.json",
+    "pipe_maps/riscv/rv32zfh.json",
+    "pipe_maps/riscv/rv64a.json",
+    "pipe_maps/riscv/rv64d.json",
+    "pipe_maps/riscv/rv64f.json",
+    "pipe_maps/riscv/rv64h.json",
+    "pipe_maps/riscv/rv64i.json",
+    "pipe_maps/riscv/rv64m.json",
+    "pipe_maps/riscv/rv64q.json",
+    "pipe_maps/riscv/rvp.json",
+    "pipe_maps/riscv/rvv.json",
+    "pipe_maps/riscv/rvv-pseudo.json",
+    "pipe_maps/riscv/springbok.json",
+    "pipe_maps/riscv/system.json"
+  ],
+
+  "__comment__ additional pipe_maps" : [
+    "pipe_maps/riscv/pseudo.json",
+    "pipe_maps/riscv/rv32c.json",
+    "pipe_maps/riscv/rv32d-zfh.json",
+    "pipe_maps/riscv/rv32k.json",
+    "pipe_maps/riscv/rv32q-zfh.json",
+    "pipe_maps/riscv/rv64b.json",
+    "pipe_maps/riscv/rv64c.json",
+    "pipe_maps/riscv/rv64k.json",
+    "pipe_maps/riscv/rv64zfh.json",
+    "pipe_maps/riscv/rvc.json",
+    "pipe_maps/riscv/rvk.json",
+    "pipe_maps/riscv/svinval.json"
+  ],
+
+  # memory_system: object, required. Description of the memory hierarchy.
+  "memory_system" : {
+    # latencies: object, required.
+    "latencies" : {
+      # fetch_read: positive integer, required when levels is not empty. The
+      # number of cycles required for handling a fetch read request coming from
+      # higher levels, not including the handling of the request by lower
+      # levels.
+      "fetch_read" : 1,
+
+      # fetch_write: positive integer, required with levels.
+      # Similar to fetch_read.
+      "fetch_write" : 1,
+
+      # write: positive integer, required (TODO(sflur): maybe this shouldn't be
+      # required for instruction cache?). The number of cycles required for
+      # handling a write request coming from a functional unit, not including
+      # the handling of the request by lower levels.
+      "write" : 1
+
+      # read: positive integer, required when this level is used as a
+      # memory_interface. The number of cycles required for handling a read
+      # request coming from a functional unit, not including the handling of
+      # the request by lower levels.
+    },
+
+    # levels: map. Description of the lower cache levels.
+    "levels" : {
+      "L3" : {
+        # type: enum, required. Possible values:
+        #   'dcache' - data cache, used for serving load/store instructions.
+        #   'icache' - instruction cache, used for fetching instructions.
+        #   'unified' - used for both instructions and data.
+        "type" : "unified",
+
+        # placement: object, required. Description of the placement policy.
+        "placement" : {
+          # type: enum, required. Possible values:
+          #   'direct_map'
+          #   'set_assoc'
+          "type" : "set_assoc",
+
+          # set_size: positive integer, required when 'type' is 'set_assoc'.
+          "set_size" : 4,
+
+          # replacement: enum, required when 'type' is 'set_assoc'. Possible values:
+          #   'LRU'
+          "replacement" : "LRU"
+        },
+
+        # write_policy: enum, required. Possible values:
+        #   'write_back'
+        #   'write_through'
+        "write_policy" : "write_back",
+
+        # inclusion: enum, required with levels. Possible values:
+        #   'exclusive'
+        #   'inclusive'
+        "inclusion" : "exclusive",
+
+        # line_size: positive integer, required. Cache line size in bits.
+        "line_size" : 128,
+
+        # size: bytes, required. Can be a positive integer, or a string with
+        # one of the suffixes b, kb, mb, gb, tb, lowercase or uppercase (e.g.
+        # "4MB").
+        "size" : "4MB",
+
+        "latencies" : {
+          "fetch_read" : 1,
+          "fetch_write" : 1,
+          "write" : 1
+        },
+        "levels" : {
+          "L2" : {
+            "type" : "unified",
+            "placement" : { "type" : "set_assoc",
+                            "set_size" : 4,
+                            "replacement" : "LRU"
+                          },
+            "write_policy" : "write_back",
+            "inclusion" : "exclusive",
+            "line_size" : 128,
+            "size" : "256KB",
+            "latencies" : { "fetch_read" : 1, "fetch_write" : 1, "write" : 1 },
+            "levels" : {
+              "L1D" : {
+                "type" : "dcache",
+                "placement" : { "type" : "set_assoc",
+                                "set_size" : 4,
+                                "replacement" : "LRU"
+                              },
+                "write_policy" : "write_back",
+                "line_size" : 128,
+                "size" : "32KB",
+                "latencies" : { "read" : 1, "write" : 1 }
+              },
+              "L1I" : {
+                "type" : "icache",
+                "placement" : { "type" : "set_assoc",
+                                "set_size" : 4,
+                                "replacement" : "LRU"
+                              },
+                "write_policy" : "write_back",
+                "line_size" : 128,
+                "size" : "32KB",
+                "latencies" : { "read" : 1, "write" : 1 }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
