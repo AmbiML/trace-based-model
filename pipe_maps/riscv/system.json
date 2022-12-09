@@ -1,0 +1,16 @@
+{
+  "__comment__": "AUTO-GENERATED FILE, DO NOT ADD NEW KEYS (it's ok to change values)!",
+  "ecall": "branch",
+  "ebreak": "branch",
+  "sret": "branch",
+  "mret": "branch",
+  "dret": "UNKNOWN",
+  "sfence.vma": "UNKNOWN",
+  "wfi": "UNKNOWN",
+  "csrrw": "csr",
+  "csrrs": "csr",
+  "csrrc": "csr",
+  "csrrwi": "csr",
+  "csrrsi": "csr",
+  "csrrci": "csr"
+}

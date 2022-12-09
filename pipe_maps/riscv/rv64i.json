@@ -1,0 +1,18 @@
+{
+  "__comment__": "AUTO-GENERATED FILE, DO NOT ADD NEW KEYS (it's ok to change values)!",
+  "addiw": "alu",
+  "slliw": "alu",
+  "srliw": "alu",
+  "sraiw": "alu",
+  "addw": "alu",
+  "subw": "alu",
+  "sllw": "alu",
+  "srlw": "alu",
+  "sraw": "alu",
+  "ld": "lsu",
+  "lwu": "lsu",
+  "sd": "lsu",
+  "slli": "alu",
+  "srli": "alu",
+  "srai": "alu"
+}

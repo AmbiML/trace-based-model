@@ -1,0 +1,11 @@
+{
+  "__comment__": "AUTO-GENERATED FILE, DO NOT ADD NEW KEYS (it's ok to change values)!",
+  "mul": "mul",
+  "mulh": "mul",
+  "mulhsu": "mul",
+  "mulhu": "mul",
+  "div": "div",
+  "divu": "div",
+  "rem": "div",
+  "remu": "div"
+}

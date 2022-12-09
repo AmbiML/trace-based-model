@@ -1,0 +1,8 @@
+{
+  "__comment__": "AUTO-GENERATED FILE, DO NOT ADD NEW KEYS (it's ok to change values)!",
+  "sinval.vma": "UNKNOWN",
+  "sfence.w.inval": "UNKNOWN",
+  "sfence.inval.ir": "UNKNOWN",
+  "hinval.vvma": "UNKNOWN",
+  "hinval.gvma": "UNKNOWN"
+}

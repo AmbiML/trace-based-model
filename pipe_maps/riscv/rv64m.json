@@ -1,0 +1,8 @@
+{
+  "__comment__": "AUTO-GENERATED FILE, DO NOT ADD NEW KEYS (it's ok to change values)!",
+  "mulw": "mul",
+  "divw": "div",
+  "divuw": "div",
+  "remw": "div",
+  "remuw": "div"
+}

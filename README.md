@@ -7,8 +7,9 @@
 - tbm/gentrace-spike.py - reads a Spike trace and reformat it. We expect to support
   other functional simulators, each of those will have its own gentrace-*.py
   file.
-- tbm/tbm.py - runs a trace in TBM; the main tool here.
+- tbm/import-riscv-opcodes.py - create and update pipe-maps.
 - tbm/merge-counters.py - merges results from multiple runs of TBM.
+- tbm/tbm.py - runs a trace in TBM; the main tool here.
 
 ### Python modules:
 
@@ -45,3 +46,4 @@ we expect to be) the API of the building blocks.
 
 - config/uarch.schema.json - JSON schema for uArch configuration files.
 - config/rvv-simple.yaml - a uArch configuration example.
+- pipe_maps/riscv/*.json - pipe-maps, mapping RISC-V opcodes to functional units.

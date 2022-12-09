@@ -1,0 +1,7 @@
+{
+  "__comment__": "AUTO-GENERATED FILE, DO NOT ADD NEW KEYS (it's ok to change values)!",
+  "fcvt.l.s": "fpu",
+  "fcvt.lu.s": "fpu",
+  "fcvt.s.l": "fpu",
+  "fcvt.s.lu": "fpu"
+}
