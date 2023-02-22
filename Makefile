@@ -27,6 +27,7 @@ requirements.txt:
 	pip list --format=freeze --local --not-required --exclude=pip --exclude=setuptools > $@
 .PHONY: requirements.txt
 
+# Use pylint 2.13.9
 lint:
 	$(PYLINT) tbm/*.py
 .PHONY:lint

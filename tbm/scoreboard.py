@@ -287,12 +287,12 @@ class Preemptive(interfaces.Scoreboard):
         self.used_write_ports = 0
 
     # Implements interfaces.Scoreboard
-    # pylint: disable-next=useless-parent-delegation
+    # pylint: disable-next=useless-super-delegation
     def reset(self, cntr: Counter) -> None:
         super().reset(cntr)
 
     # Implements interfaces.Scoreboard
-    # pylint: disable-next=useless-parent-delegation
+    # pylint: disable-next=useless-super-delegation
     def tick(self, cntr: Counter) -> None:
         super().tick(cntr)
 

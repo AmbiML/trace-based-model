@@ -98,13 +98,13 @@ class BufferedQueue(collections.deque[T], interfaces.ConsumableQueue[T]):
     # Implements interfaces.ConsumableQueue
     # The following is useless, but without it pylint will issue an error
     # (E0110) for every instantiation of BufferedQueue.
-    # pylint: disable-next=useless-parent-delegation
+    # pylint: disable-next=useless-super-delegation
     def __len__(self) -> int:
         return super().__len__()
 
     # Implements interfaces.ConsumableQueue
     # The following is useless, but without it pylint will issue an error
     # (E0110) for every instantiation of BufferedQueue.
-    # pylint: disable-next=useless-parent-delegation
+    # pylint: disable-next=useless-super-delegation
     def __iter__(self):
         return super().__iter__()

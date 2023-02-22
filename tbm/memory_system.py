@@ -521,7 +521,7 @@ class MemorySystem(interfaces.Module):
                 self.load_element(u, d, e)
 
     # Implements interfaces.Module
-    # pylint: disable-next=useless-parent-delegation
+    # pylint: disable-next=useless-super-delegation
     def reset(self, cntr: Counter) -> None:
         super().reset(cntr)
         # TODO(sflur): implement proper reset
