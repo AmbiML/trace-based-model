@@ -13,11 +13,13 @@ $(OUT_PACKAGES)/FBInstruction/Instruction.py: config/instruction.fbs | $(OUT_PAC
 $(OUT_PACKAGES):
 	mkdir -p $@
 
+ifneq "$(wildcard $(ROOTDIR)/toolchain/riscv-opcodes)" ""
 # Regenerate the pipe-maps for RISC-V, based on the opcodes from the
 # riscv-opcodes repo. The associated pipes are copied from the old json file.
 RISCV_EXTS := $(shell find $(ROOTDIR)/toolchain/riscv-opcodes -maxdepth 1 -name 'opcodes-*' -printf '%f\n' | cut -d- -f2-)
 riscv_pipe_maps: $(RISCV_EXTS:%=pipe_maps/riscv/%.json)
 .PHONY: riscv_pipe_maps
+endif
 
 pipe_maps/riscv/%.json: $(ROOTDIR)/toolchain/riscv-opcodes/opcodes-%
 	$(PYTHON) $(IMPORT_RISCV_OPCODES) $(if $(wildcard $@),-m $@) -n $@.new $<
