@@ -30,6 +30,12 @@ of code reuse and make it highly configurable.
 
 ### Prerequisite:
 
+To run TBM you will need Python3 and the packages listed in `requirements.txt`.
+You can install the packages with pip: `pip install -r requirements.txt`.
+
+You will also need the flatbuffers compiler `flatc`. On Debian based distros you
+can get it with apt: `sudo apt install flatbuffers-compiler`
+
 The make scripts expect the following environment variables and directory
 structure:
 
@@ -113,11 +119,3 @@ type checker you can merge inferred types back to the `.py` files by running
 `make merge-pyi` to merge into all `.py` files, or `make merge-pyi-MOD` to
 merge into `tbm/MOD.py`.
 
-### Running tests from sparrow
-
-- `make -f riscv_tests.mk riscv_tests_isa` - run some of the tests from `$ROOTDIR/out/springbok/riscv-tests/isa`.
-- `make -f riscv_tests.mk riscv_tests_benchmarks` - run the tests from `$ROOTDIR/out/springbok/riscv-tests/benchmarks`.
-- `make -f riscv_tests.mk riscv_tests` - run the two previous targets.
-- `make -f riscv_tests.mk benchmarks` - runs the above benchmarks and generates
-  the file `benchmarks.md` with all the results.
-- `make -f rvv_tests.mk rvv_tests` - run the tests from `$ROOTDIR/out/springbok/rvv_for_tbm/tests/`.
