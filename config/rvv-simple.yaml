@@ -13,7 +13,7 @@
 # limitations under the License.
 
 {
-  "description": "TBM configuration for Springbok",
+  "description": "TBM configuration for RISC-V with vector extension.",
 
   # This file is also used as an example of a TBM configuration, hence all the
   # comments.
