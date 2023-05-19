@@ -31,7 +31,7 @@ of code reuse and make it highly configurable.
 ### Prerequisite:
 
 To run TBM you will need Python3 and the packages listed in `requirements.txt`.
-You can install the packages with pip: `pip install -r requirements.txt`.
+You can install the packages with pip: `pip install --require-hashes -r requirements.txt`.
 
 You will also need the flatbuffers compiler `flatc`. On Debian based distros you
 can get it with apt: `sudo apt install flatbuffers-compiler`

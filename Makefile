@@ -25,8 +25,9 @@ pipe_maps/riscv/%.json: $(ROOTDIR)/toolchain/riscv-opcodes/opcodes-%
 	$(PYTHON) $(IMPORT_RISCV_OPCODES) $(if $(wildcard $@),-m $@) -n $@.new $<
 	mv $@.new $@
 
-requirements.txt:
-	pip list --format=freeze --local --not-required --exclude=pip --exclude=setuptools > $@
+
+upgrade-requirements.txt:
+	pip-compile --generate-hashes --upgrade requirements.in
 .PHONY: requirements.txt
 
 # Use pylint 2.13.9
